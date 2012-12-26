@@ -16,7 +16,15 @@ end
 
 post '/' do
 
-    settings.connections.each { |user, out| out << "data: #{params[:user]} : #{params[:msg]}\n\n" }
+  nikname_expr = /\/(.+):.*/
+  user = nikname_expr.match(params[:msg])
+  if user.nil?
+    settings.connections.each_pair { |user, out| out << "data: #{params[:user]} : #{params[:msg]}\n\n" }
     204 # response without entity body
+  else
+    settings.connections[user[1]] << "data: Mensaje Privado de #{params[:user]} : #{params[:msg].gsub(/\/(.+):/, '')}\n\n"
+    settings.connections[params[:user]] << "data: Mensaje Privado para #{user[1]} : #{params[:msg].gsub(/\/(.+):/, '')}\n\n"
+    204 # response without entity body
+  end
 
 end
